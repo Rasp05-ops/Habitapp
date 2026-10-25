@@ -11,10 +11,16 @@ declare global { interface Window { YT?: YouTube; onYouTubeIframeAPIReady?: () =
 
 function YouTubeVideo({ story, onEnded }: { story: DailyStory; onEnded: () => void }) {
   const host = useRef<HTMLDivElement>(null);
+  const player = useRef<Player | null>(null);
   useEffect(() => {
     if (!story.video_id || !host.current) return;
     const start = () => {
-      if (host.current && window.YT) new window.YT.Player(host.current, { videoId: story.video_id, events: { onStateChange: (e) => { if (e.data === 0) onEnded(); } } });
+      if (host.current && window.YT && !player.current) {
+        player.current = new window.YT.Player(host.current, {
+          videoId: story.video_id,
+          events: { onStateChange: (e) => { if (e.data === 0) onEnded(); } },
+        });
+      }
     };
     if (window.YT) start();
     else {
@@ -24,6 +30,10 @@ function YouTubeVideo({ story, onEnded }: { story: DailyStory; onEnded: () => vo
       window.onYouTubeIframeAPIReady = start;
       document.head.appendChild(script);
     }
+    return () => {
+      player.current?.destroy();
+      player.current = null;
+    };
   }, [story.video_id, onEnded]);
   return <div className="story-video" ref={host} />;
 }

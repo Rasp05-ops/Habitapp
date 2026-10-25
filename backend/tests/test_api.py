@@ -67,6 +67,25 @@ def test_password_registration_allows_multiple_distinct_users():
     assert first.json()["user"]["id"] != second.json()["user"]["id"]
 
 
+def test_story_quiz_requires_watch_and_awards_once():
+    h, _ = login("+919811111111")
+    story = client.get(f"{BASE}/stories/today", headers=h)
+    assert story.status_code == 200
+    payload = story.json()
+    answers = {question["id"]: 0 for question in payload["questions"]}
+    blocked = client.post(f"{BASE}/stories/{payload['id']}/quiz", headers=h, json={"answers": answers})
+    assert blocked.status_code == 409
+    assert blocked.json()["error"]["code"] == "STORY_NOT_WATCHED"
+
+    assert client.post(f"{BASE}/stories/{payload['id']}/watched", headers=h).status_code == 200
+    completed = client.post(f"{BASE}/stories/{payload['id']}/quiz", headers=h, json={"answers": answers})
+    assert completed.status_code == 200
+    assert completed.json()["quiz_completed"] is True
+    duplicate = client.post(f"{BASE}/stories/{payload['id']}/quiz", headers=h, json={"answers": answers})
+    assert duplicate.status_code == 200
+    assert client.get(f"{BASE}/today", headers=h).json()["progress"]["points"]["lifetime"] == 10
+
+
 def test_full_day_flow():
     h, _ = login()
     assert client.patch(f"{BASE}/me", headers=h, json={"name": "Riya Sharma", "language": "hi", "leaderboard_opt_in": True}).json()["name"] == "Riya Sharma"
