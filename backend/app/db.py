@@ -1,5 +1,5 @@
 """SQLAlchemy persistence. Production deployments should run migrations before startup."""
-from sqlalchemy import Boolean, Date, DateTime, Integer, String, Text, create_engine, text
+from sqlalchemy import Date, Integer, String, Text, create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 from .config import DATABASE_URL, IS_DEV
 

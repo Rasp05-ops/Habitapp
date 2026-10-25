@@ -355,6 +355,25 @@ Do not use a SQLite URL in production:
 DATABASE_URL=sqlite:///...
 ```
 
+### Account creation returns “server busy” or “Something went wrong”
+
+Registration is backed by PostgreSQL and is safe when multiple people register
+at the same time. Confirm that:
+
+1. The Render service has a PostgreSQL `DATABASE_URL`, not a local SQLite file.
+2. Every Vercel deployment uses the same Render API in `VITE_API_BASE`.
+3. `CORS_ORIGINS` contains the exact Vercel origin, without a trailing slash or
+   `/api/v1` suffix.
+4. The Render service is healthy at
+   `https://<render-service>.onrender.com/api/v1/health`.
+
+If the same username is submitted twice, the API intentionally returns
+`409 USERNAME_TAKEN`; use a different username or log in to the existing
+account. For an actual 500 response, open the Render service logs and check the
+database error around the request time. Do not run separate backend instances
+with different databases, because users created by one instance will not be
+available to another.
+
 ### Browser CORS error
 
 Set Render to the exact frontend origin:

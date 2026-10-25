@@ -51,6 +51,14 @@ def test_signup_then_login_same_account():
     assert second["is_new_user"] is False and second["user"]["id"] == first["user"]["id"]
 
 
+def test_password_registration_rejects_duplicate_username():
+    first = client.post(f"{BASE}/auth/register", json={"username": "habit_user", "password": "password123"})
+    assert first.status_code == 201
+    duplicate = client.post(f"{BASE}/auth/register", json={"username": "HABIT_USER", "password": "password456"})
+    assert duplicate.status_code == 409
+    assert duplicate.json()["error"]["code"] == "USERNAME_TAKEN"
+
+
 def test_full_day_flow():
     h, _ = login()
     assert client.patch(f"{BASE}/me", headers=h, json={"name": "Riya Sharma", "language": "hi", "leaderboard_opt_in": True}).json()["name"] == "Riya Sharma"

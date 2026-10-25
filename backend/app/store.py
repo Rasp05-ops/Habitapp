@@ -102,6 +102,25 @@ class Store:
                 "last_active": self.last_active.get(user_id).isoformat() if self.last_active.get(user_id) else None,
                 "story_progress": stories})))
 
+    def create_user(self, user: User, password_hash: str) -> None:
+        """Create credentials in one database transaction before updating the cache."""
+        with SessionLocal.begin() as s:
+            s.add(UserRow(
+                id=user.id,
+                username=user.username.lower(),
+                phone=user.phone,
+                data=_json(user.model_dump()),
+                password_hash=password_hash,
+            ))
+            s.add(StateRow(user_id=user.id, data=_json({"streak": self._default_streak(),
+                "attempts": {}, "image_hashes": [], "image_phashes": [], "target_days": [],
+                "last_active": None, "story_progress": {}})))
+
+        self.users[user.id] = user
+        self.username_index[user.username.lower()] = user.id
+        self.habits[user.id] = []
+        self.password_hashes[user.id] = password_hash
+
     def user_lock(self, user_id: str) -> threading.Lock:
         return self._locks.setdefault(user_id, threading.Lock())
     def streak_for(self, user_id: str) -> dict:

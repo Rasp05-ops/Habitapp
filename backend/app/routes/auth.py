@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import APIRouter, Depends, Request
+from sqlalchemy.exc import IntegrityError
 
 from ..config import IS_DEV, OTP_MAX_ATTEMPTS, OTP_REQUESTS_PER_IP_PER_HOUR
 from ..errors import ApiError
@@ -64,10 +65,13 @@ def register(body: Register):
             raise ApiError(409, "USERNAME_TAKEN", "That username is already registered.")
         uid = secrets.token_hex(16)
         user = User(id=uid, username=body.username, phone="", daily_target=RULES["habits"]["default_daily_target"])
-        store.users[uid], store.username_index[body.username.lower()] = user, uid
-        store.habits[uid] = []
-        store.password_hashes[uid] = _password_hash(body.password)
-        store.persist(uid)
+        password_hash = _password_hash(body.password)
+        try:
+            store.create_user(user, password_hash)
+        except IntegrityError:
+            # Another worker or instance may have registered this username after
+            # the in-memory check. The database constraint is authoritative.
+            raise ApiError(409, "USERNAME_TAKEN", "That username is already registered.")
     return AuthResult(access_token=create_token(uid), expires_in_seconds=A["token_ttl_seconds"], is_new_user=True, user=user)
 
 
