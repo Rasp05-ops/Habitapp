@@ -14,7 +14,9 @@ class UserRow(Base):
     __tablename__ = "users"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     username: Mapped[str] = mapped_column(String(30), unique=True, index=True)
-    phone: Mapped[str] = mapped_column(String(20), unique=True, default="")
+    # Password accounts do not have a phone number. Keep this nullable so the
+    # legacy OTP phone uniqueness constraint only applies to actual phone values.
+    phone: Mapped[str | None] = mapped_column(String(20), unique=True, nullable=True)
     data: Mapped[str] = mapped_column(Text)
     password_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
 
@@ -47,6 +49,30 @@ def init_db() -> None:
     # SQLite is explicitly the local/test database. PostgreSQL schema changes belong to Alembic.
     if IS_DEV or DATABASE_URL.startswith("sqlite"):
         Base.metadata.create_all(engine)
+        if DATABASE_URL.startswith("sqlite"):
+            with engine.begin() as connection:
+                columns = connection.execute(text("PRAGMA table_info(users)")).mappings().all()
+                phone = next((column for column in columns if column["name"] == "phone"), None)
+                if phone and phone["notnull"]:
+                    connection.execute(text("""
+                        CREATE TABLE users_migrated (
+                            id VARCHAR(64) PRIMARY KEY,
+                            username VARCHAR(30) NOT NULL UNIQUE,
+                            phone VARCHAR(20),
+                            data TEXT NOT NULL,
+                            password_hash TEXT
+                        )
+                    """))
+                    connection.execute(text("""
+                        INSERT INTO users_migrated (id, username, phone, data, password_hash)
+                        SELECT id, username, NULLIF(phone, ''), data, password_hash FROM users
+                    """))
+                    connection.execute(text("DROP TABLE users"))
+                    connection.execute(text("ALTER TABLE users_migrated RENAME TO users"))
+                    connection.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username)"))
+                    connection.execute(text(
+                        "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_phone_unique ON users (phone) WHERE phone IS NOT NULL"
+                    ))
 
 
 def check_db() -> None:

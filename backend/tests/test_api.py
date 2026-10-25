@@ -59,6 +59,14 @@ def test_password_registration_rejects_duplicate_username():
     assert duplicate.json()["error"]["code"] == "USERNAME_TAKEN"
 
 
+def test_password_registration_allows_multiple_distinct_users():
+    first = client.post(f"{BASE}/auth/register", json={"username": "first_user", "password": "password123"})
+    second = client.post(f"{BASE}/auth/register", json={"username": "second_user", "password": "password123"})
+    assert first.status_code == 201
+    assert second.status_code == 201
+    assert first.json()["user"]["id"] != second.json()["user"]["id"]
+
+
 def test_full_day_flow():
     h, _ = login()
     assert client.patch(f"{BASE}/me", headers=h, json={"name": "Riya Sharma", "language": "hi", "leaderboard_opt_in": True}).json()["name"] == "Riya Sharma"

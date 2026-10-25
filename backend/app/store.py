@@ -85,7 +85,7 @@ class Store:
                                   (StateRow, StateRow.user_id)):
                 s.execute(delete(model).where(column == user_id))
             u = self.users[user_id]
-            s.add(UserRow(id=user_id, username=u.username.lower(), phone=u.phone, data=_json(u.model_dump()), password_hash=self.password_hashes.get(user_id)))
+            s.add(UserRow(id=user_id, username=u.username.lower(), phone=u.phone or None, data=_json(u.model_dump()), password_hash=self.password_hashes.get(user_id)))
             for h in self.habits.get(user_id, []):
                 s.add(HabitRow(id=h.id, user_id=user_id, data=_json(h.model_dump())))
             for (owner, cid, d), data in self.checkins.items():
@@ -108,7 +108,7 @@ class Store:
             s.add(UserRow(
                 id=user.id,
                 username=user.username.lower(),
-                phone=user.phone,
+                phone=None,
                 data=_json(user.model_dump()),
                 password_hash=password_hash,
             ))

@@ -9,7 +9,7 @@ The backend supports SQLite for local development and PostgreSQL for production 
 Before deploying:
 
 1. Create the database and set `DATABASE_URL`.
-2. Run `backend/migrations/001_initial.sql` against PostgreSQL with your provider's migration tool or `psql`.
+2. Run the checked-in migrations in `backend/migrations/` against PostgreSQL with your provider's migration tool or `psql`.
 3. Set secrets in the hosting provider's secret manager; do not commit `.env`.
 4. Build the frontend with `VITE_API_BASE` pointing at the deployed API.
 5. Run backend and frontend tests in CI.
