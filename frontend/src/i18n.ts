@@ -170,6 +170,7 @@ const T: Record<string, Record<Language, string>> = {
   "NETWORK_ERROR": { en: "No internet or server is busy. Try again.", hi: "इंटरनेट नहीं है या सर्वर व्यस्त है। फिर कोशिश करें।" },
   "UNAUTHENTICATED": { en: "Please log in again.", hi: "कृपया फिर से लॉग इन करें।" },
   "INVALID_CREDENTIALS": { en: "Username or password is incorrect.", hi: "यूज़रनेम या पासवर्ड गलत है।" },
+  "USERNAME_TAKEN": { en: "That username is already taken. Choose another one.", hi: "यह यूज़रनेम पहले से लिया जा चुका है। दूसरा चुनें।" },
   "INVALID_OTP": { en: "Wrong code. Try again.", hi: "कोड गलत है। फिर कोशिश करें।" },
   "OTP_EXPIRED": { en: "Code expired. Ask for a new one.", hi: "कोड पुराना हो गया। नया माँगें।" },
   "TOO_MANY_REQUESTS": { en: "Too many tries. Wait a little.", hi: "बहुत कोशिशें हुईं। थोड़ा रुकें।" },

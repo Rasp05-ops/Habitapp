@@ -352,6 +352,7 @@ components:
         - UNAUTHENTICATED
         - INVALID_OTP
         - INVALID_CREDENTIALS
+        - USERNAME_TAKEN
         - STORY_NOT_WATCHED
         - QUIZ_INCORRECT
         - STORY_NOT_CURRENT
