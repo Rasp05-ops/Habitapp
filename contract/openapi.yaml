@@ -1,0 +1,659 @@
+openapi: 3.0.3
+info:
+  title: Student Habit App API
+  version: 0.1.0
+  description: |
+    Shared contract between frontend and backend. THIS FILE IS THE SOURCE OF TRUTH.
+    Change it first (reviewed by both sides), then update code. Game numbers live in constants.json.
+servers:
+  - url: http://localhost:8000/api/v1
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      operationId: health
+      security: []
+      responses:
+        "200":
+          description: Service is up
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: {type: string, enum: [ok]}
+
+  /auth/otp/request:
+    post:
+      operationId: requestOtp
+      summary: Send a one-time code to a phone number (same call for new and existing users)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/OtpRequest"}
+      responses:
+        "200":
+          description: Code sent
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/OtpRequestResult"}
+        "422": {$ref: "#/components/responses/Error"}
+        "429": {$ref: "#/components/responses/Error"}
+
+  /auth/login:
+    post:
+      operationId: login
+      summary: Log in with an existing username and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/PasswordLogin"}
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AuthResult"}
+        "401": {$ref: "#/components/responses/Error"}
+        "422": {$ref: "#/components/responses/Error"}
+
+  /auth/register:
+    post:
+      operationId: register
+      summary: Create an account with a username and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/PasswordLogin"}
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AuthResult"}
+        "409": {$ref: "#/components/responses/Error"}
+        "422": {$ref: "#/components/responses/Error"}
+
+  /auth/otp/verify:
+    post:
+      operationId: verifyOtp
+      summary: Verify the code. Logs in, or creates the account if the phone is new.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/OtpVerify"}
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AuthResult"}
+        "400": {$ref: "#/components/responses/Error"}
+        "422": {$ref: "#/components/responses/Error"}
+
+  /me:
+    get:
+      operationId: getMe
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/User"}
+        "401": {$ref: "#/components/responses/Error"}
+    patch:
+      operationId: updateMe
+      summary: Partial update (onboarding uses this to set name, language, daily target)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/UserUpdate"}
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/User"}
+        "401": {$ref: "#/components/responses/Error"}
+        "422": {$ref: "#/components/responses/Error"}
+
+  /stories/today:
+    get:
+      operationId: getTodayStory
+      responses:
+        "200":
+          description: Today's moral story and quiz
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DailyStory"}
+        "401": {$ref: "#/components/responses/Error"}
+
+  /stories/{story_id}/watched:
+    post:
+      operationId: markStoryWatched
+      parameters:
+        - name: story_id
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        "200":
+          description: Story unlocked
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DailyStory"}
+        "401": {$ref: "#/components/responses/Error"}
+        "404": {$ref: "#/components/responses/Error"}
+
+  /stories/{story_id}/quiz:
+    post:
+      operationId: submitStoryQuiz
+      parameters:
+        - name: story_id
+          in: path
+          required: true
+          schema: {type: string}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answers]
+              properties:
+                answers:
+                  type: object
+                  additionalProperties: {type: integer}
+      responses:
+        "200":
+          description: Quiz result
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DailyStory"}
+        "401": {$ref: "#/components/responses/Error"}
+        "409": {$ref: "#/components/responses/Error"}
+        "422": {$ref: "#/components/responses/Error"}
+
+  /habits/catalog:
+    get:
+      operationId: getHabitCatalog
+      responses:
+        "200":
+          description: Preset habits a student can add
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/CatalogResponse"}
+        "401": {$ref: "#/components/responses/Error"}
+
+  /habits:
+    get:
+      operationId: listHabits
+      responses:
+        "200":
+          description: The student's active habits
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/HabitList"}
+        "401": {$ref: "#/components/responses/Error"}
+    post:
+      operationId: addHabit
+      summary: Add a preset habit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/HabitCreate"}
+      responses:
+        "201":
+          description: Habit added
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Habit"}
+        "401": {$ref: "#/components/responses/Error"}
+        "404": {$ref: "#/components/responses/Error"}
+        "409": {$ref: "#/components/responses/Error"}
+        "422": {$ref: "#/components/responses/Error"}
+
+  /habits/{habit_id}:
+    delete:
+      operationId: removeHabit
+      summary: Archive a habit (past check-ins are kept)
+      parameters:
+        - {$ref: "#/components/parameters/HabitId"}
+      responses:
+        "204": {description: Removed}
+        "401": {$ref: "#/components/responses/Error"}
+        "404": {$ref: "#/components/responses/Error"}
+
+  /today:
+    get:
+      operationId: getToday
+      summary: Everything the home screen needs in one call
+      responses:
+        "200":
+          description: Today's habits and progress
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Today"}
+        "401": {$ref: "#/components/responses/Error"}
+
+  /habits/{habit_id}/check-ins:
+    post:
+      operationId: createCheckIn
+      summary: Mark a habit done. JSON {method:"tap"} for tap habits, multipart "photo" for photo habits.
+      parameters:
+        - {$ref: "#/components/parameters/HabitId"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CheckInTapRequest"}
+          multipart/form-data:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo: {type: string, format: binary}
+      responses:
+        "200":
+          description: Result of the check-in (see status)
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/CheckInResult"}
+        "400": {$ref: "#/components/responses/Error"}
+        "401": {$ref: "#/components/responses/Error"}
+        "404": {$ref: "#/components/responses/Error"}
+        "413": {$ref: "#/components/responses/Error"}
+        "415": {$ref: "#/components/responses/Error"}
+        "422": {$ref: "#/components/responses/Error"}
+        "503": {$ref: "#/components/responses/Error"}
+
+  /history/calendar:
+    get:
+      operationId: getCalendar
+      summary: Tick-calendar data for one month
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema: {type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$', example: "2026-10"}
+      responses:
+        "200":
+          description: Days with activity
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/CalendarResponse"}
+        "401": {$ref: "#/components/responses/Error"}
+        "422": {$ref: "#/components/responses/Error"}
+
+  /games:
+    get:
+      operationId: listGames
+      summary: Games and whether they are unlocked (unlocks are permanent)
+      responses:
+        "200":
+          description: Games
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/GamesResponse"}
+        "401": {$ref: "#/components/responses/Error"}
+
+  /leaderboard/weekly:
+    get:
+      operationId: getWeeklyLeaderboard
+      summary: Opt-in weekly Top N. Resets every Monday 00:00 IST.
+      parameters:
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 50, default: 10}
+      responses:
+        "200":
+          description: Leaderboard
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/LeaderboardResponse"}
+        "401": {$ref: "#/components/responses/Error"}
+        "422": {$ref: "#/components/responses/Error"}
+
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+
+  parameters:
+    HabitId:
+      name: habit_id
+      in: path
+      required: true
+      schema: {type: string}
+
+  responses:
+    Error:
+      description: Error (always this shape; switch on error.code, never on message)
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/ErrorResponse"}
+
+  schemas:
+    ErrorCode:
+      type: string
+      enum:
+        - UNAUTHENTICATED
+        - INVALID_OTP
+        - INVALID_CREDENTIALS
+        - STORY_NOT_WATCHED
+        - QUIZ_INCORRECT
+        - STORY_NOT_CURRENT
+        - OTP_EXPIRED
+        - TOO_MANY_REQUESTS
+        - VALIDATION_ERROR
+        - NOT_FOUND
+        - HABIT_NOT_FOUND
+        - HABIT_LIMIT_REACHED
+        - HABIT_ALREADY_ADDED
+        - WRONG_VERIFICATION_METHOD
+        - IMAGE_TOO_LARGE
+        - UNSUPPORTED_IMAGE_TYPE
+        - VERIFICATION_UNAVAILABLE
+        - INTERNAL_ERROR
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: {$ref: "#/components/schemas/ErrorCode"}
+            message: {type: string, description: "For developers/logs only. Show translated text keyed by code."}
+
+    Language: {type: string, enum: [en, hi]}
+    Verification: {type: string, enum: [tap, photo]}
+    LocalizedName:
+      type: object
+      required: [en, hi]
+      properties:
+        en: {type: string}
+        hi: {type: string}
+
+    OtpRequest:
+      type: object
+      required: [phone]
+      properties:
+        phone: {type: string, pattern: '^\+[1-9]\d{9,14}$', example: "+919876543210"}
+    PasswordLogin:
+      type: object
+      required: [username, password]
+      properties:
+        username: {type: string, pattern: '^[A-Za-z0-9_]{3,30}$'}
+        password: {type: string, minLength: 8, maxLength: 128}
+    OtpRequestResult:
+      type: object
+      required: [sent, expires_in_seconds]
+      properties:
+        sent: {type: boolean}
+        expires_in_seconds: {type: integer}
+    OtpVerify:
+      type: object
+      required: [phone, otp]
+      properties:
+        phone: {type: string, pattern: '^\+[1-9]\d{9,14}$'}
+        otp: {type: string, pattern: '^\d{6}$'}
+    AuthResult:
+      type: object
+      required: [access_token, token_type, expires_in_seconds, is_new_user, user]
+      properties:
+        access_token: {type: string}
+        token_type: {type: string, enum: [bearer]}
+        expires_in_seconds: {type: integer}
+        is_new_user: {type: boolean}
+        user: {$ref: "#/components/schemas/User"}
+
+    User:
+      type: object
+      required: [id, username, phone, name, language, timezone, daily_target, leaderboard_opt_in, onboarding_completed]
+      properties:
+        id: {type: string}
+        username: {type: string}
+        phone: {type: string}
+        name: {type: string, nullable: true}
+        language: {$ref: "#/components/schemas/Language"}
+        timezone: {type: string, example: "Asia/Kolkata"}
+        daily_target: {type: integer, minimum: 1, maximum: 5}
+        leaderboard_opt_in: {type: boolean}
+        onboarding_completed: {type: boolean}
+    UserUpdate:
+      type: object
+      properties:
+        name: {type: string, minLength: 1, maxLength: 50}
+        language: {$ref: "#/components/schemas/Language"}
+        timezone: {type: string}
+        daily_target: {type: integer, minimum: 1, maximum: 5}
+        leaderboard_opt_in: {type: boolean}
+        onboarding_completed: {type: boolean}
+    StoryQuestion:
+      type: object
+      required: [id, prompt, options]
+      properties:
+        id: {type: string}
+        prompt: {type: string}
+        options:
+          type: array
+          items: {type: string}
+    DailyStory:
+      type: object
+      required: [id, title, summary, video_id, questions, watched, quiz_completed, quiz_points]
+      properties:
+        id: {type: string}
+        title: {type: string}
+        summary: {type: string}
+        video_id: {type: string}
+        questions:
+          type: array
+          items: {$ref: "#/components/schemas/StoryQuestion"}
+        watched: {type: boolean}
+        quiz_completed: {type: boolean}
+        quiz_points: {type: integer}
+
+    CatalogHabit:
+      type: object
+      required: [id, name, icon, verification, points]
+      properties:
+        id: {type: string, example: water}
+        name: {$ref: "#/components/schemas/LocalizedName"}
+        icon: {type: string, example: "💧"}
+        verification: {$ref: "#/components/schemas/Verification"}
+        points: {type: integer}
+    CatalogResponse:
+      type: object
+      required: [habits]
+      properties:
+        habits:
+          type: array
+          items: {$ref: "#/components/schemas/CatalogHabit"}
+    Habit:
+      type: object
+      required: [id, catalog_id, name, icon, verification, created_at]
+      properties:
+        id: {type: string}
+        catalog_id: {type: string}
+        name: {$ref: "#/components/schemas/LocalizedName"}
+        icon: {type: string}
+        verification: {$ref: "#/components/schemas/Verification"}
+        created_at: {type: string, format: date-time}
+    HabitList:
+      type: object
+      required: [habits]
+      properties:
+        habits:
+          type: array
+          items: {$ref: "#/components/schemas/Habit"}
+    HabitCreate:
+      type: object
+      required: [catalog_id]
+      properties:
+        catalog_id: {type: string}
+
+    Streak:
+      type: object
+      required: [current, best, freezes_left, completed_today, last_completed_date]
+      properties:
+        current: {type: integer, minimum: 0}
+        best: {type: integer, minimum: 0}
+        freezes_left: {type: integer, minimum: 0}
+        completed_today: {type: boolean}
+        last_completed_date: {type: string, format: date, nullable: true}
+    PointsSummary:
+      type: object
+      required: [lifetime, weekly, today]
+      properties:
+        lifetime: {type: integer}
+        weekly: {type: integer}
+        today: {type: integer}
+    NextUnlock:
+      type: object
+      required: [game_id, name, required_points, lifetime_points]
+      properties:
+        game_id: {type: string}
+        name: {$ref: "#/components/schemas/LocalizedName"}
+        required_points: {type: integer}
+        lifetime_points: {type: integer}
+    Progress:
+      type: object
+      required: [completed_count, daily_target, target_reached, streak, points, next_unlock]
+      properties:
+        completed_count: {type: integer}
+        daily_target: {type: integer}
+        target_reached: {type: boolean}
+        streak: {$ref: "#/components/schemas/Streak"}
+        points: {$ref: "#/components/schemas/PointsSummary"}
+        next_unlock:
+          allOf:
+            - $ref: "#/components/schemas/NextUnlock"
+          nullable: true
+          description: null when every game is already unlocked
+
+    TodayHabit:
+      type: object
+      required: [habit, status, retries_left, points_earned]
+      properties:
+        habit: {$ref: "#/components/schemas/Habit"}
+        status: {type: string, enum: [pending, done, done_unverified]}
+        retries_left: {type: integer, nullable: true, description: "Photo habits only; null for tap habits"}
+        points_earned: {type: integer}
+    Today:
+      type: object
+      required: [date, habits, progress]
+      properties:
+        date: {type: string, format: date, description: "Today in the user's timezone"}
+        habits:
+          type: array
+          items: {$ref: "#/components/schemas/TodayHabit"}
+        progress: {$ref: "#/components/schemas/Progress"}
+
+    CheckInTapRequest:
+      type: object
+      required: [method]
+      properties:
+        method: {type: string, enum: [tap]}
+    Bonus:
+      type: object
+      required: [type, points, streak_days]
+      properties:
+        type: {type: string, enum: [daily_target, streak_milestone]}
+        points: {type: integer}
+        streak_days: {type: integer, nullable: true}
+    CheckInResult:
+      type: object
+      required: [status, message_key, points_awarded, retries_left, bonuses, progress]
+      properties:
+        status:
+          type: string
+          enum: [done, done_unverified, retry, already_done]
+          description: |
+            done = counted. done_unverified = counted at reduced points after all photo attempts used.
+            retry = photo not accepted, try again. already_done = nothing changed.
+        message_key:
+          type: string
+          enum:
+            - checkin.done
+            - checkin.done_unverified
+            - checkin.already_done
+            - checkin.retry.unclear
+            - checkin.retry.no_match
+            - checkin.retry.reused
+        points_awarded: {type: integer, description: "Habit points only. Bonuses are listed separately."}
+        retries_left: {type: integer, nullable: true}
+        bonuses:
+          type: array
+          items: {$ref: "#/components/schemas/Bonus"}
+        progress: {$ref: "#/components/schemas/Progress"}
+
+    CalendarDay:
+      type: object
+      required: [date, completed_count, target_reached]
+      properties:
+        date: {type: string, format: date}
+        completed_count: {type: integer}
+        target_reached: {type: boolean}
+    CalendarResponse:
+      type: object
+      required: [month, days]
+      properties:
+        month: {type: string, example: "2026-10"}
+        days:
+          type: array
+          items: {$ref: "#/components/schemas/CalendarDay"}
+
+    Game:
+      type: object
+      required: [id, name, icon, required_points, unlocked]
+      properties:
+        id: {type: string}
+        name: {$ref: "#/components/schemas/LocalizedName"}
+        icon: {type: string}
+        required_points: {type: integer}
+        unlocked: {type: boolean}
+    GamesResponse:
+      type: object
+      required: [lifetime_points, games]
+      properties:
+        lifetime_points: {type: integer}
+        games:
+          type: array
+          items: {$ref: "#/components/schemas/Game"}
+
+    LeaderboardEntry:
+      type: object
+      required: [rank, display_name, weekly_points, is_me]
+      properties:
+        rank: {type: integer}
+        display_name: {type: string, description: "First name + last initial, e.g. 'Riya S.'"}
+        weekly_points: {type: integer}
+        is_me: {type: boolean}
+    LeaderboardResponse:
+      type: object
+      required: [week_start, week_end, opted_in, entries, me]
+      properties:
+        week_start: {type: string, format: date}
+        week_end: {type: string, format: date}
+        opted_in: {type: boolean}
+        entries:
+          type: array
+          items: {$ref: "#/components/schemas/LeaderboardEntry"}
+        me:
+          allOf:
+            - $ref: "#/components/schemas/LeaderboardEntry"
+          nullable: true
+          description: null if not opted in, or no points earned this week yet

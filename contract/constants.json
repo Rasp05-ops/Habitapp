@@ -1,0 +1,35 @@
+{
+  "version": "0.1.0",
+  "habits": {
+    "max_per_user": 5,
+    "default_daily_target": 3,
+    "min_daily_target": 1,
+    "max_daily_target": 5,
+    "catalog": [
+      {"id": "study",    "icon": "📚", "name": {"en": "Study",         "hi": "पढ़ाई"},        "verification": "photo", "points": 10},
+      {"id": "read",     "icon": "📖", "name": {"en": "Read a book",   "hi": "किताब पढ़ना"},   "verification": "photo", "points": 10},
+      {"id": "exercise", "icon": "🏃", "name": {"en": "Exercise",      "hi": "कसरत"},         "verification": "photo", "points": 10},
+      {"id": "water",    "icon": "💧", "name": {"en": "Drink water",   "hi": "पानी पीना"},    "verification": "tap",   "points": 10},
+      {"id": "sleep",    "icon": "😴", "name": {"en": "Sleep on time", "hi": "समय पर सोना"},  "verification": "tap",   "points": 10}
+    ]
+  },
+  "points": {
+    "unverified_habit": 5,
+    "daily_target_bonus": 20,
+    "streak_milestones": {"3": 30, "7": 70, "14": 150, "30": 400}
+  },
+  "streak": {"freezes_per_month": 2},
+  "verification": {
+    "min_confidence": 0.7,
+    "max_attempts_per_habit_per_day": 3,
+    "max_image_bytes": 5242880,
+    "allowed_mime_types": ["image/jpeg", "image/png", "image/webp"]
+  },
+  "games": [
+    {"id": "memory_match", "icon": "🧠", "name": {"en": "Memory Match", "hi": "मेमोरी मैच"},   "required_points": 100},
+    {"id": "word_guess",   "icon": "🔤", "name": {"en": "Word Guess",   "hi": "शब्द पहचानो"},  "required_points": 300},
+    {"id": "sudoku",       "icon": "🔢", "name": {"en": "Sudoku",       "hi": "सुडोकू"},       "required_points": 600}
+  ],
+  "leaderboard": {"timezone": "Asia/Kolkata", "week_starts_on": "monday", "default_limit": 10, "max_limit": 50},
+  "auth": {"otp_length": 6, "otp_ttl_seconds": 300, "otp_requests_per_hour": 5, "token_ttl_seconds": 2592000}
+}
