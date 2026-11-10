@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { useApp } from "../hooks/app";
 
 export function Spinner({ label }: { label?: string }) {
@@ -24,6 +24,27 @@ export function PageHead({ title, sub, right }: { title: string; sub?: string; r
     <div className="page-head">
       <div><h1>{title}</h1>{sub && <p className="muted">{sub}</p>}</div>
       {right}
+    </div>
+  );
+}
+
+export function Button({ children, variant = "primary", className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "outline" | "ghost" }) {
+  return <button className={`btn ${variant} ${className}`.trim()} {...props}>{children}</button>;
+}
+
+export function Eyebrow({ children }: { children: ReactNode }) {
+  return <span className="eyebrow">{children}</span>;
+}
+
+export function HeroHeading({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <h1 className={`hero-heading ${className}`.trim()}>{children}</h1>;
+}
+
+export function StatBlock({ value, label, className = "" }: { value: ReactNode; label: ReactNode; className?: string }) {
+  return (
+    <div className={`stat-block ${className}`.trim()}>
+      <strong>{value}</strong>
+      <span>{label}</span>
     </div>
   );
 }
