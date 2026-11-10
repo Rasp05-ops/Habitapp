@@ -13,6 +13,7 @@ const T: Record<string, Record<Language, string>> = {
   "login.username": { en: "Username", hi: "यूज़रनेम" },
   "login.username.hint": { en: "3–30 letters, numbers, or underscores", hi: "3–30 अक्षर, अंक या अंडरस्कोर" },
   "login.password": { en: "Password", hi: "पासवर्ड" },
+  "login.passwordPlaceholder": { en: "Enter your password", hi: "अपना पासवर्ड दर्ज करें" },
   "login.continue": { en: "Log in", hi: "लॉग इन करें" },
   "login.register": { en: "Create account", hi: "खाता बनाएँ" },
   "login.createPrompt": { en: "New here? Create an account", hi: "नए हैं? खाता बनाएँ" },

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { Language, User } from "../api/types";
 import Icon from "../components/Icon";
+import FeatureScene from "../components/FeatureScene";
 import KungFuPanda from "../components/KungFuPanda";
 import { errText, t as tr } from "../i18n";
 import { store } from "../lib/storage";
@@ -20,7 +21,9 @@ export default function Login({ onDone }: { onDone: (u: User, isNew: boolean) =>
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [welcome, setWelcome] = useState<User | null>(null);
+  const [activeFeature, setActiveFeature] = useState<number | null>(null);
   const t = (k: string) => tr(lang, k);
+  const features = [["camera", "login.f1"], ["flame", "login.f2"], ["games", "login.f3"]] as const;
 
   useEffect(() => { document.documentElement.lang = lang; store.set(LANG_KEY, lang); }, [lang]);
   const run = async (fn: () => Promise<void>) => {
@@ -41,14 +44,19 @@ export default function Login({ onDone }: { onDone: (u: User, isNew: boolean) =>
   return (
     <div className="login">
       <div className="login-hero">
-        <KungFuPanda />
+        <div className="login-visual">
+          <FeatureScene active={activeFeature} />
+          <KungFuPanda />
+        </div>
         <div className="brand big"><span className="brand-mark"><Icon name="flame" size={26} fill /></span><span>{t("app.name")}</span></div>
         <h1>{t("login.tagline")}</h1>
         <p>{t("login.sub")}</p>
         <ul>
-          <li><span>📸</span>{t("login.f1")}</li>
-          <li><span>🔥</span>{t("login.f2")}</li>
-          <li><span>🎮</span>{t("login.f3")}</li>
+          {features.map(([icon, key], index) => (
+            <li key={key} className={activeFeature === index ? "is-active" : ""} onMouseEnter={() => setActiveFeature(index)} onMouseLeave={() => setActiveFeature(null)} onFocus={() => setActiveFeature(index)} onBlur={() => setActiveFeature(null)}>
+              <span><Icon name={icon} size={19} /></span>{t(key)}
+            </li>
+          ))}
         </ul>
       </div>
 
@@ -65,7 +73,7 @@ export default function Login({ onDone }: { onDone: (u: User, isNew: boolean) =>
             </label>
             <label className="field">
               <span>{t("login.password")}</span>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder="••••••••" />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder={t("login.passwordPlaceholder")} />
             </label>
             <button className="btn primary block" disabled={busy || !username.trim() || !password}>{busy ? <span className="spinner sm" /> : t(mode === "register" ? "login.register" : "login.continue")}</button>
             <button type="button" className="link" disabled={busy} onClick={() => { setMode(mode === "login" ? "register" : "login"); setErr(""); }}>
