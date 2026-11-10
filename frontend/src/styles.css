@@ -97,7 +97,7 @@ b { font-weight: 650; } small { font-size: .8rem; }
 .stat-block span { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
 
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; } .field > span { font-size: .85rem; color: var(--muted); font-weight: 600; } .field.compact { margin-bottom: 6px; }
-input[type="text"], input:not([type]), input[type="tel"] { width: 100%; min-height: 50px; padding: 0 16px; font-size: 1.05rem; border-radius: 15px; border: 1px solid var(--border); background: var(--surface-2); outline: none; transition: border-color .2s, box-shadow .2s; }
+input[type="text"], input[type="password"], input:not([type]), input[type="tel"] { width: 100%; min-height: 50px; padding: 0 16px; font-size: 1.05rem; border-radius: 15px; border: 1px solid var(--border); background: var(--surface-2); outline: none; transition: border-color .2s, box-shadow .2s; }
 input:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(139,123,255,.2); }
 .otp-input { text-align: center; font-size: 1.8rem !important; letter-spacing: .5em; font-weight: 700; padding-left: .5em !important; }
 .inline-form { display: flex; gap: 8px; } .inline-form input { flex: 1; min-width: 0; }
