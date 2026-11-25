@@ -3,8 +3,22 @@ from sqlalchemy import Date, Integer, String, Text, create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 from .config import DATABASE_URL, IS_DEV
 
-_connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, pool_pre_ping=True, connect_args=_connect_args)
+
+def _sqlalchemy_url(url: str) -> str:
+    if url.startswith("postgres://"):
+        return "postgresql+psycopg://" + url.removeprefix("postgres://")
+    if url.startswith("postgresql://"):
+        return "postgresql+psycopg://" + url.removeprefix("postgresql://")
+    return url
+
+
+_engine_url = _sqlalchemy_url(DATABASE_URL)
+if _engine_url.startswith("sqlite"):
+    _connect_args = {"check_same_thread": False}
+else:
+    _connect_args = {"connect_timeout": 10}
+
+engine = create_engine(_engine_url, pool_pre_ping=True, connect_args=_connect_args)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 class Base(DeclarativeBase):

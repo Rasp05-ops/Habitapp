@@ -340,15 +340,19 @@ Save the variable and restart or redeploy the Render service.
 ## 11. Common errors
 
 ### `DATABASE_URL must be set`
-
 Add the Render PostgreSQL connection string:
 
 ```env
 DATABASE_URL=postgresql+psycopg://...
 ```
 
-### `Production deployments must use PostgreSQL`
+Render Blueprint connection strings may use `postgresql://` (or `postgres://`).
+The backend normalizes those schemes to the installed psycopg v3 driver and
+fails a database connection attempt after 10 seconds instead of hanging. Keep
+the Blueprint's PostgreSQL `connectionString` value; do not install or rely on
+the unrelated psycopg2 driver.
 
+### `Production deployments must use PostgreSQL`
 Do not use a SQLite URL in production:
 
 ```env
