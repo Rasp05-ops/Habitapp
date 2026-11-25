@@ -139,7 +139,7 @@ DATABASE_URL=postgresql+psycopg://...
 JWT_SECRET=<strong-random-secret>
 CORS_ORIGINS=https://your-project.vercel.app
 GEMINI_API_KEY=<your-gemini-api-key>
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.6-flash
 STORY_VIDEO_IDS=id1,id2,id3,id4,id5,id6,id7
 ```
 
@@ -415,7 +415,7 @@ Check:
 ```env
 APP_ENV=prod
 GEMINI_API_KEY=...
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.6-flash
 ```
 
 Then restart Render.
@@ -444,7 +444,7 @@ DATABASE_URL=postgresql+psycopg://...
 JWT_SECRET=<random-secret>
 CORS_ORIGINS=https://your-project.vercel.app
 GEMINI_API_KEY=<gemini-key>
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.6-flash
 STORY_VIDEO_IDS=id1,id2,id3,id4,id5,id6,id7
 ```
 
